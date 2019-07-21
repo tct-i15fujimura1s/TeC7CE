@@ -9,6 +9,19 @@ Cpu.vhdの内容を自分で作成して完成してください．
 RAMとのインタフェース部分は約10ns以内です．
 真面目に設計しないと制約を満たすことができません．
 
+## 注意
+
+本設計データを Xilinx ISE でコンパイルすると下の警告が表示されます．
+これは，RAM の初期化データを暗号化する場合に問題が発生するので表示されるものです．
+本設計データでは暗号化していないので，この警告は無視しても問題ありません．
+
+```
+WARNING:PhysDesignRules:2410 - This design is using one or more 9K Block RAMs
+   (RAMB8BWER).  9K Block RAM initialization data, both user defined and
+   default, may be incorrect and should not be used.  For more information,
+   please reference Xilinx Answer Record 39999
+```
+
 ## レポジトリの内容
 
 ```
