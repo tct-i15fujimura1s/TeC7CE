@@ -40,7 +40,7 @@ RAMとのインタフェース部分は約10ns以内です．
 |
 + Doc --------+               資料
               |
-              + BlockDiagram  トップレベル(TeC.vhd)を図で表現したもの
+              + BlockDiagram  トップレベル(TeC.vhd)をブロック図で表現したもの
 ```
 
 ## TeC7CE のブロック図
