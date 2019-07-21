@@ -45,4 +45,4 @@ RAMとのインタフェース部分は約10ns以内です．
 
 ## TeC7CE のブロック図
 
-![TeC7CEのブロック図](https://github.com/tctsigemura/TeC7CE/blob/master/Doc/BlockDiagram.pdf?raw=true "ブロック図")
+![TeC7CEのブロック図](https://github.com/tctsigemura/TeC7CE/blob/master/Doc/BlockDiagram.png?raw=true "ブロック図")
