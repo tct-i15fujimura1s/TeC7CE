@@ -1,13 +1,15 @@
-# Tokuyama Educational Computer Ver.7 (TeC7CE)
+# 学生実験用の TeC7 (TeC7CE)
 
-TeCのCPUを実装する学生実験用のVHDLソースです．
+学生実験でTeCのCPUを実装するためのVHDLソースです．
 CPU内部が実装してありません．
 Cpu.vhdの内容を自分で作成して完成してください．
 
-約50MHz(RAMが逆相なので実質100MHz)で動作させます．
-組み合わせ回路に許される遅延は基本的に20ns以内です．
-RAMとのインタフェース部分は10ns以内です．
+49.1520MHz(RAMが逆相なので実質98.3040MHz)で動作させます．
+組み合わせ回路に許される遅延は基本的に約20ns以内です．
+RAMとのインタフェース部分は約10ns以内です．
 真面目に設計しないと制約を満たすことができません．
+
+## レポジトリの内容
 
 ```
 + README.md                   このファイル自身
@@ -40,3 +42,7 @@ RAMとのインタフェース部分は10ns以内です．
               |
               + BlockDiagram  トップレベル(TeC.vhd)を図で表現したもの
 ```
+
+## TeC7CE のブロック図
+
+![TeC7CEのブロック図](https://github.com/tctsigemura/TeC7CE/blob/master/Doc/BlockDiagram.pdf?raw=true "ブロック図")
