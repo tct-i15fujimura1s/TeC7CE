@@ -19,13 +19,14 @@ entity Sequencer is
          Flag  : in  STD_LOGIC_VECTOR (2 downto 0); -- CSZ
          Stop  : in  STD_LOGIC;
          -- CPU内部の制御用に出力
-         IrLd  : out  STD_LOGIC;
-         DrLd  : out  STD_LOGIC;
-         FlgLd : out  STD_LOGIC;
+         LI    : out  STD_LOGIC; -- IrLd
+         LDR   : out  STD_LOGIC; -- DrLd
+         LF    : out  STD_LOGIC; -- FlgLd
+         DSP   : out  STD_LOGIC;
+         SPINC : out  STD_LOGIC; -- SpP1
+         SPDEC : out  STD_LOGIC; -- SpM1
+         PCINC : out  STD_LOGIC; -- PcP1
          GrLd  : out  STD_LOGIC;
-         SpM1  : out  STD_LOGIC;
-         SpP1  : out  STD_LOGIC;
-         PcP1  : out  STD_LOGIC;
          PcJmp : out  STD_LOGIC;
          PcRet : out  STD_LOGIC;
          Ma    : out  STD_LOGIC_VECTOR (1 downto 0);
