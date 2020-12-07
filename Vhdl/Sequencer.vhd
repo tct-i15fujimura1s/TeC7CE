@@ -103,6 +103,12 @@ begin
   end process;
   
   -- Control Signals
+      
+  -- <WIP>
+  LI   <= DecSt(0);
+  
+  -- </WIP>
+      
   Jmp  <= '1' when Rd="00" else '0';  -- JMP
   Jz   <= '1' when Rd="01" else '0';  -- JZ
   Jc   <= '1' when Rd="10" else '0';  -- JC
