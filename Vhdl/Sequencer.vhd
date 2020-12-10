@@ -118,17 +118,18 @@ begin
   --        JMP     JZ and Z Flag       JC and C Flag       JM and S Flag
   JmpCnd <= Jmp or (Jz and Flag(0)) or (Jc and Flag(2)) or (Jm and Flag(1));
 
-  IrLd  <= DecSt(0);
-  DrLd  <= DecSt(1) or (DecSt(2) and not Immd) or DecSt(10);
-  FlgLd <= '1' when DecSt(3)='1' and OP/="0001" else '0';    -- OP /=LD
+  LI    <= DecSt(0);
+  LDR   <= DecSt(1) or (DecSt(2) and not Immd) or DecSt(10);
+  LF    <= '1' when DecSt(3)='1' and OP/="0001" else '0';    -- OP /=LD
   GrLd  <= '1' when (DecSt(3)='1' and OP/="0101") or         -- OP /=CMP
            DecSt(11)='1' else '0';
-  SpP1  <= DecSt(10) or DecSt(12);
-  SpM1  <= DecSt(6)  or DecSt(8);
-  PcP1  <= (DecSt(0) and not Stop) or
-           DecSt(2) or DecSt(4) or DecSt(5) or DecSt(6);
+  SPINC <= DecSt(10) or DecSt(13);
+  SPDEC <= DecSt(7)  or DecSt(11);
+  PCINC <= (DecSt(0) and not Stop) or
+           DecSt(2) or DecSt(4) or DecSt(7);
   PcJmp <= (DecSt(5) and JmpCnd) or DecSt(7);
   PcRet <= DecSt(12);
+  DSP   <= '0' when DecSt(0)='1' or DecSt(7)='1' or DecSt(8)='1' or DecSt(12)='1' or DecSt(13)='1' else '1';
   Ma    <= "00" when DecSt(0)='1' or DecSt(1)='1' else       -- "00"=PC
            "01" when DecSt(2)='1' or DecSt(4)='1' else       -- "01"=EA
            "10";                                             -- "10"=SP
