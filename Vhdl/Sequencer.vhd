@@ -20,7 +20,7 @@ entity Sequencer is
          Stop  : in  STD_LOGIC;
          -- CPU内部の制御用に出力
          --   レジスタの書き込み制御
-         LI    : out  STD_LOGIC;
+         LIR   : out  STD_LOGIC;
          LDR   : out  STD_LOGIC;
          LF    : out  STD_LOGIC;
          SPINC : out  STD_LOGIC;
@@ -114,8 +114,9 @@ begin
 
   IND  <= "11" when DecSt(0)='1' or DecSt(1)='1' else -- PC: fetch, decode
           "10" when DecSt(8)='1' or DecSt(10)='1' or DecSt(12)='1' or DecSt(13)='1' else -- SP: call2, ret, push2, pop
-          Rx-"01"; -- Rx-1
+          Rx-"01";
 
+  MD   <= '1' when DecSt(8) else '0'; -- call2
 
   Jmp  <= '1' when Rd="00" else '0';  -- JMP
   Jz   <= '1' when Rd="01" else '0';  -- JZ
@@ -127,24 +128,19 @@ begin
   --        JMP     JZ and Z Flag       JC and C Flag       JM and S Flag
   JmpCnd <= Jmp or (Jz and Flag(0)) or (Jc and Flag(2)) or (Jm and Flag(1));
 
-  LI    <= DecSt(0);
-  LDR   <= DecSt(1) or (DecSt(2) and not Immd) or DecSt(10);
+  LIR   <= DecSt(0);
+  LDR   <= DecSt(1) or (DecSt(2) and not Immd) or DecSt(10) or DecSt(13); -- fetch, decode, ret, pop
   LF    <= '1' when DecSt(3)='1' and OP/="0001" else '0';    -- OP /=LD
   LR    <= '1' when (DecSt(3)='1' and OP/="0101") or         -- OP /=CMP
-           DecSt(5)='1' or DecSt(6)='1' or DecSt(9)='1' or DecSt(13)='1' else '0';
-           -- XXX: なぜ元の実装では orのあとが DecSt(5) だったかわかっていない
+           DecSt(5)='1' or DecSt(9)='1' or DecSt(13)='1' else '0'; -- shift, call3(sp), pop
+           -- XXX: なぜ元の実装では orのあとが DecSt(5) だけだったかわかっていない
   SPINC <= DecSt(10) or DecSt(13);
   SPDEC <= DecSt(7)  or DecSt(11);
-  PCINC <= (DecSt(0) and not Stop) or
-           DecSt(2) or DecSt(4) or DecSt(7);
+  PCINC <= (DecSt(0) and not Stop) or        -- fetch
+           DecSt(2) or DecSt(4) or DecSt(7); -- alu1, st, call1
   LPC   <= (DecSt(6) and JmpCnd) or DecSt(9) or DecSt(10);   -- JMP, CALL, RET
-  -- PCRetは消した
   DSP   <= '0' when DecSt(0)='1' or DecSt(7)='1' or DecSt(8)='1' or DecSt(12)='1' or DecSt(13)='1' else '1';
-  Ma    <= "00" when DecSt(0)='1' or DecSt(1)='1' else       -- "00"=PC
-           "01" when DecSt(2)='1' or DecSt(4)='1' else       -- "01"=EA
-           "10";                                             -- "10"=SP
-  Md    <= not DecSt(7);
-  We    <= DecSt(4)  or DecSt(7) or DecSt(9);
-  Halt  <= DecSt(13);
+  We    <= DecSt(4)  or DecSt(9) or DecSt(12); -- st, call3, push2
+  Halt  <= DecSt(14); -- halt
 
 end Behavioral;
