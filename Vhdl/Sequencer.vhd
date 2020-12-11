@@ -14,23 +14,25 @@ entity Sequencer is
          -- 入力
          Reset : in  STD_LOGIC;
          OP    : in  STD_LOGIC_VECTOR (3 downto 0);
-         Rd    : in  STD_LOGIC_VECTOR (1 downto 0);
+         Rd    : in  STD_LOGIC_VECTOR (1 downto 0); -- WRはない
          Rx    : in  STD_LOGIC_VECTOR (1 downto 0);
          Flag  : in  STD_LOGIC_VECTOR (2 downto 0); -- CSZ
          Stop  : in  STD_LOGIC;
          -- CPU内部の制御用に出力
-         LI    : out  STD_LOGIC; -- IrLd
-         LDR   : out  STD_LOGIC; -- DrLd
-         LF    : out  STD_LOGIC; -- FlgLd
-         DSP   : out  STD_LOGIC;
-         SPINC : out  STD_LOGIC; -- SpP1
-         SPDEC : out  STD_LOGIC; -- SpM1
-         PCINC : out  STD_LOGIC; -- PcP1
-         GrLd  : out  STD_LOGIC;
-         PcJmp : out  STD_LOGIC;
-         PcRet : out  STD_LOGIC;
-         Ma    : out  STD_LOGIC_VECTOR (1 downto 0);
-         Md    : out  STD_LOGIC;
+         --   レジスタの書き込み制御
+         LI    : out  STD_LOGIC;
+         LDR   : out  STD_LOGIC;
+         LF    : out  STD_LOGIC;
+         SPINC : out  STD_LOGIC;
+         SPDEC : out  STD_LOGIC;
+         PCINC : out  STD_LOGIC;
+         LR    : out  STD_LOGIC;
+         LPC   : out  STD_LOGIC;
+         --   アドレスの計算用
+         MA    : out  STD_LOGIC; -- ADD, DR
+         DSP   : out  STD_LOGIC; -- '0', DR
+         IND   : out  STD_LOGIC_VECTOR (1 downto 0); -- G1, G2, SP, PC
+         MD    : out  STD_LOGIC; -- ALU, PC
          -- CPU外部へ出力
          We    : out  STD_LOGIC;
          Halt  : out  STD_LOGIC
@@ -104,10 +106,12 @@ begin
 
   -- Control Signals
 
-  -- <WIP>
-  LI   <= DecSt(0);
+  MA   <= '0' when DecSt(0)='1'
 
-  -- </WIP>
+  IND  <= "11" when DecSt(0)='1' or DecSt(1)='1' else -- PC
+          "10" when DecSt(8)='1' or DecSt(12)='1' or DecSt(13)='1' else -- SP
+          Rx-"01"; -- Rx-1
+
 
   Jmp  <= '1' when Rd="00" else '0';  -- JMP
   Jz   <= '1' when Rd="01" else '0';  -- JZ
@@ -121,14 +125,15 @@ begin
   LI    <= DecSt(0);
   LDR   <= DecSt(1) or (DecSt(2) and not Immd) or DecSt(10);
   LF    <= '1' when DecSt(3)='1' and OP/="0001" else '0';    -- OP /=LD
-  GrLd  <= '1' when (DecSt(3)='1' and OP/="0101") or         -- OP /=CMP
-           DecSt(11)='1' else '0';
+  LR    <= '1' when (DecSt(3)='1' and OP/="0101") or         -- OP /=CMP
+           DecSt(5)='1' or DecSt(6)='1' or DecSt(9)='1' or DecSt(13)='1' else '0';
+           -- XXX: なぜ元の実装では orのあとが DecSt(5) だったかわかっていない
   SPINC <= DecSt(10) or DecSt(13);
   SPDEC <= DecSt(7)  or DecSt(11);
   PCINC <= (DecSt(0) and not Stop) or
            DecSt(2) or DecSt(4) or DecSt(7);
-  PcJmp <= (DecSt(5) and JmpCnd) or DecSt(7);
-  PcRet <= DecSt(12);
+  LPC   <= (DecSt(6) and JmpCnd) or DecSt(9) or DecSt(10);   -- JMP, CALL, RET
+  -- PCRetは消した
   DSP   <= '0' when DecSt(0)='1' or DecSt(7)='1' or DecSt(8)='1' or DecSt(12)='1' or DecSt(13)='1' else '1';
   Ma    <= "00" when DecSt(0)='1' or DecSt(1)='1' else       -- "00"=PC
            "01" when DecSt(2)='1' or DecSt(4)='1' else       -- "01"=EA
