@@ -15,7 +15,7 @@ entity Sequencer is
          Reset : in  STD_LOGIC;
          OP    : in  STD_LOGIC_VECTOR (3 downto 0);
          Rd    : in  STD_LOGIC_VECTOR (1 downto 0); -- WRはない
-         Rx    : in  STD_LOGIC_VECTOR (1 downto 0);
+         Rx    : in  STD_LOGIC_VECTOR (1 downto 0); -- ダイレクト, G1, G2, イミディエイト
          Flag  : in  STD_LOGIC_VECTOR (2 downto 0); -- CSZ
          Stop  : in  STD_LOGIC;
          -- CPU内部の制御用に出力
@@ -49,6 +49,7 @@ architecture Behavioral of Sequencer is
   signal Jc    : STD_LOGIC;                     -- JC
   signal Jm    : STD_LOGIC;                     -- JM
   signal JmpCnd: STD_LOGIC;                     -- Jmp Condition
+  signal Indx  : STD_LOGIC;                     -- Indexed mode
   signal Immd  : STD_LOGIC;                     -- Immediate mode
 
 begin
@@ -82,7 +83,7 @@ begin
                        DecSt(12)='1' or DecSt(13)='1' or  -- PUSH,POP
                        DecSt(10)='1' or DecSt(14)='1' else -- RET,HALT
            "0001" when DecSt(0)='1' and Stop='0'  else   -- Fetch
-           "0010" when DecSt(1)='1' and Type1='1' else   -- LD/ADD/.../XOR
+           "0010" when DecSt(1)='1' and Type1='1' and Immd='0' else   -- LD/ADD/.../XOR
            "0100" when DecSt(1)='1' and OP="0010" else   -- ST
            "0101" when DecSt(1)='1' and OP="1001" else   -- SHIFT
            "0110" when DecSt(1)='1' and OP="1010" and JmpCnd='1' else -- JMP/JZ/JC/JM
@@ -106,10 +107,13 @@ begin
 
   -- Control Signals
 
-  MA   <= '0' when DecSt(0)='1'
+  MA   <= '0' when DecSt(0)='1' or DecSt(1)='1' or DecSt(8)='1' or DecSt(10)='1' or DecSt(12)='1' or DecSt(13)='1' or -- fetch, decode, call2, ret, push2, pop
+              ((DecSt(2)='1' or DecSt(4)='1' or DecSt(6)='1' or DecSt(7)='1') and Indx='1') else '0';  -- index: alu1, st, jmp, call1
 
-  IND  <= "11" when DecSt(0)='1' or DecSt(1)='1' else -- PC
-          "10" when DecSt(8)='1' or DecSt(12)='1' or DecSt(13)='1' else -- SP
+  DSP  <= '0' when DecSt(0)='1' or DecSt(1)='1' or DecSt(8)='1' or DecSt(10)='1' or DecSt(12)='1' or DecSt(13)='1' else '1'; -- PC, SP
+
+  IND  <= "11" when DecSt(0)='1' or DecSt(1)='1' else -- PC: fetch, decode
+          "10" when DecSt(8)='1' or DecSt(10)='1' or DecSt(12)='1' or DecSt(13)='1' else -- SP: call2, ret, push2, pop
           Rx-"01"; -- Rx-1
 
 
@@ -117,6 +121,7 @@ begin
   Jz   <= '1' when Rd="01" else '0';  -- JZ
   Jc   <= '1' when Rd="10" else '0';  -- JC
   Jm   <= '1' when Rd="11" else '0';  -- JM
+  Indx <= '1' when Rx="01" or Rx="10" else '0';  -- Indexed mode
   Immd <= '1' when Rx="11" else '0';  -- Immediate mode
 
   --        JMP     JZ and Z Flag       JC and C Flag       JM and S Flag
